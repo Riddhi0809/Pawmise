@@ -1,13 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({ username: "", password: "" });
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const navigate = useNavigate();
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // ✅ SLIDESHOW IMAGES
+  const images = [
+      "/images/pet1.png",
+      "/images/pet2.jpg",
+      "/images/pet3.jpg",
+      "/images/pet4.jpg",
+      "/images/pet5.jpg",
+      "/images/pet6.png",
+  ];
+
+  // ✅ SLIDESHOW EFFECT
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % images.length);
+    }, 2200);
+
+    return () => clearInterval(interval);
+  }, [images.length]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -17,11 +38,7 @@ export default function Login() {
     setError("");
     setSuccess("");
 
-    // IMPORTANT:
-    // localhost → browser
-    // backend → docker-to-docker only
     const API_URL = "http://localhost:5000/api";
-
     const url = isLogin ? `${API_URL}/login` : `${API_URL}/register`;
 
     try {
@@ -38,14 +55,11 @@ export default function Login() {
         return;
       }
 
-    
       if (isLogin) {
         localStorage.setItem("jwtToken", data.token);
         localStorage.setItem("username", form.username);
         navigate("/home");
-      }
-
-      else {
+      } else {
         setSuccess("Registration successful! Please login.");
         setIsLogin(true);
         setForm({ username: "", password: "" });
@@ -58,68 +72,75 @@ export default function Login() {
   };
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
-      <h2>{isLogin ? "Login" : "Sign Up"}</h2>
-
-      <input
-        name="username"
-        placeholder="Username"
-        value={form.username}
-        onChange={handleChange}
-        required
-      />
-
-      <input
-        name="password"
-        type="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-        required
-      />
-
-      <button className="login-btn" type="submit">
-        {isLogin ? "Login" : "Sign Up"}
-      </button>
-
-      {error && <div style={{ color: "red", textAlign: "center" }}>{error}</div>}
-      {success && (
-        <div style={{ color: "green", textAlign: "center" }}>{success}</div>
-      )}
-
-      <div style={{ marginTop: "1rem", textAlign: "center" }}>
-        {isLogin ? (
-          <>
-            New user?{" "}
-            <button
-              type="button"
-              className="login-btn"
-              onClick={() => {
-                setIsLogin(false);
-                setError("");
-                setSuccess("");
-              }}
-            >
-              Sign Up
-            </button>
-          </>
-        ) : (
-          <>
-            Already have an account?{" "}
-            <button
-              type="button"
-              className="login-btn"
-              onClick={() => {
-                setIsLogin(true);
-                setError("");
-                setSuccess("");
-              }}
-            >
-              Log In
-            </button>
-          </>
-        )}
+    <div className="login-page split-layout">
+      
+      {/* LEFT IMAGE SLIDESHOW */}
+      <div className="login-image">
+        <img
+          src={images[currentSlide]}
+          alt="Pet"
+          key={currentSlide}
+        />
       </div>
-    </form>
+
+      {/* RIGHT LOGIN FORM */}
+      <div className="login-right">
+        <form className="login-form card" onSubmit={handleSubmit}>
+          <h2>{isLogin ? "LOGIN" : "SIGN UP"}</h2>
+
+          <label>Username</label>
+          <input
+            name="username"
+            placeholder="Enter your username"
+            value={form.username}
+            onChange={handleChange}
+            required
+          />
+
+          <label>Password</label>
+          <input
+            name="password"
+            type="password"
+            placeholder="Enter your password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+
+          <button className="login-btn" type="submit">
+            {isLogin ? "Login" : "Sign Up"}
+          </button>
+
+          {error && <div className="error-text">{error}</div>}
+          {success && <div style={{ color: "green", textAlign: "center" }}>{success}</div>}
+
+          <p className="switch-text">
+            {isLogin ? (
+              <>
+                Don’t have an account?{" "}
+                <span onClick={() => {
+                  setIsLogin(false);
+                  setError("");
+                  setSuccess("");
+                }}>
+                  SIGN UP
+                </span>
+              </>
+            ) : (
+              <>
+                Already have an account?{" "}
+                <span onClick={() => {
+                  setIsLogin(true);
+                  setError("");
+                  setSuccess("");
+                }}>
+                  LOG IN
+                </span>
+              </>
+            )}
+          </p>
+        </form>
+      </div>
+    </div>
   );
 }

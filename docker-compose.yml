@@ -9,6 +9,17 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+
   backend:
     build: ./backend
     container_name: backend
@@ -30,3 +41,5 @@ services:
 
 volumes:
   mongo_data:
+  sonarqube_data:
+  sonarqube_extensions:
