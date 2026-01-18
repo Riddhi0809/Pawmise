@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_IMAGE_NAME = "yourdockerhubusername/pawmise-backend"
+        DOCKER_IMAGE_NAME = "riddhijadhav0809/pawmise-backend"
         DOCKER_TAG = "latest"
     }
 
@@ -15,7 +15,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git credentialsId: 'git-creds',
-                    url: 'https://github.com/YOUR_USERNAME/YOUR_REPO.git',
+                    url: https://github.com/Riddhi0809/Pawmise.git,
                     branch: 'main'
             }
         }
