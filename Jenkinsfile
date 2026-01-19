@@ -16,26 +16,20 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                dir('backend') {
-                    bat 'npm install'
-                }
+                bat 'npm install'
             }
         }
 
         stage('Run Tests (Mocha + Chai)') {
             steps {
-                dir('backend') {
-                    bat 'npm test'
-                }
+                bat 'npm test'
             }
         }
 
         stage('SonarCloud Analysis') {
             steps {
                 withSonarQubeEnv('SonarCloud') {
-                    dir('backend') {
-                        bat "\"%SONAR_SCANNER_HOME%\\bin\\sonar-scanner.bat\""
-                    }
+                    bat "\"${tool 'sonar-scanner'}\\bin\\sonar-scanner.bat\""
                 }
             }
         }
