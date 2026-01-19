@@ -2,20 +2,16 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk17'
-        nodejs 'node18'
+        nodejs 'NodeJS'
     }
 
     environment {
-        NODE_ENV = 'test'
-        MONGO_URI = 'mongodb://127.0.0.1:27017/testdb'
-        RAZORPAY_KEY_ID = 'dummy'
-        RAZORPAY_KEY_SECRET = 'dummy'
+        NODE_ENV = 'production'
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
@@ -29,10 +25,12 @@ pipeline {
             }
         }
 
-        stage('SonarCloud Analysis') {
+        stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarCloud') {
-                    bat "\"${tool 'sonar-scanner'}\\bin\\sonar-scanner.bat\""
+                dir('backend') {
+                    withSonarQubeEnv('SonarQube') {
+                        bat 'sonar-scanner'
+                    }
                 }
             }
         }
@@ -43,6 +41,24 @@ pipeline {
                     waitForQualityGate abortPipeline: true
                 }
             }
+        }
+
+        stage('Build (Optional)') {
+            steps {
+                echo 'Build stage placeholder'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully'
+        }
+        failure {
+            echo 'Pipeline failed'
+        }
+        aborted {
+            echo 'Pipeline aborted'
         }
     }
 }
