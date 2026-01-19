@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* MongoDB (disabled in tests) */
+/* MongoDB (skip during tests) */
 if (process.env.NODE_ENV !== 'test') {
   mongoose.connect(process.env.MONGO_URI, { dbName: 'pet_app' })
     .then(() => console.log('MongoDB connected'))
@@ -20,7 +20,7 @@ app.use('/api/visits', require('./routes/visit'));
 app.use('/api/board', require('./routes/board'));
 app.use('/api', require('./routes/auth'));
 
-/* Razorpay (optional) */
+/* Razorpay optional */
 let razorpay = null;
 if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
   razorpay = new Razorpay({
@@ -30,7 +30,9 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
 }
 
 app.post('/api/payment/orders', async (req, res) => {
-  if (!razorpay) return res.status(500).json({ error: 'Payment disabled' });
+  if (!razorpay) {
+    return res.status(500).json({ error: 'Payment disabled' });
+  }
 
   const order = await razorpay.orders.create({
     amount: req.body.amount * 100,
