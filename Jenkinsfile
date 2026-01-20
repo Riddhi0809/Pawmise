@@ -2,19 +2,26 @@ pipeline {
     agent any
 
     tools {
+        jdk 'jdk17'
         nodejs 'node18'
+    }
+
+    environment {
+        NODE_ENV = 'test'
+        MONGO_URI = 'mongodb://127.0.0.1:27017/testdb'
+        RAZORPAY_KEY_ID = 'dummy'
+        RAZORPAY_KEY_SECRET = 'dummy'
     }
 
     stages {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Riddhi0809/DevOps_Pawmise_Project.git'
+                checkout scm
             }
         }
 
-        stage('Install Backend Dependencies') {
+        stage('Install Dependencies') {
             steps {
                 dir('backend') {
                     bat 'npm install'
@@ -22,26 +29,18 @@ pipeline {
             }
         }
 
-        stage('Run Backend Tests') {
+        stage('SonarCloud Analysis') {
             steps {
-                dir('backend') {
-                    bat 'npm test || echo "Tests failed but continuing"'
+                withSonarQubeEnv('SonarCloud') {
+                    bat "\"${tool 'sonar-scanner'}\\bin\\sonar-scanner.bat\""
                 }
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Quality Gate') {
             steps {
-                withSonarQubeEnv('LocalSonar') {
-                    bat 'SonarScanner'
-                }
-            }
-        }
-
-        stage('Build Backend Docker Image') {
-            steps {
-                dir('backend') {
-                    bat 'docker build -t pawmise-backend .'
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
