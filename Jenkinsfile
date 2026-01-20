@@ -38,12 +38,29 @@ pipeline {
             }
         }
 
+        stage('Quality Gate (Non-blocking)') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+
         stage('Build Backend Docker Image') {
             steps {
                 dir('backend') {
                     bat 'docker build -t pawmise-backend .'
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline completed successfully"
+        }
+        failure {
+            echo "❌ Pipeline failed — check logs"
         }
     }
 }
